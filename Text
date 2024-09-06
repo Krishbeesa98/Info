@@ -5,3 +5,22 @@ curl -X POST https://login.salesforce.com/services/oauth2/token \
   -d "client_secret=YOUR_CLIENT_SECRET" \
   -d "username=YOUR_SALESFORCE_USERNAME" \
   -d "password=YOUR_SALESFORCE_PASSWORD_AND_SECURITY_TOKEN"
+
+
+#!/bin/bash
+
+# Specify the path to the flow.xml file
+FLOW_XML_PATH="path/to/flow.xml"
+
+# Use xmllint to parse the XML and extract processor names and concurrent task count
+xmllint --xpath '//processor/name/text() | //processor/scheduling[@concurrentTasks]/@concurrentTasks' "$FLOW_XML_PATH" 2>/dev/null |
+awk 'NR%2{printf "%s ", $0; next;}1' |
+while read -r line; do
+  # Split the output into processor name and concurrent tasks
+  processor_name=$(echo "$line" | awk '{print $1}')
+  concurrent_tasks=$(echo "$line" | awk '{print $2}')
+
+  # Display the processor name and the number of concurrent tasks
+  echo "Processor: $processor_name, Concurrent Tasks: $concurrent_tasks"
+done |
+sort -k3 -n -r # Sort the results by concurrent tasks in descending order
