@@ -24,3 +24,90 @@ while read -r line; do
   echo "Processor: $processor_name, Concurrent Tasks: $concurrent_tasks"
 done |
 sort -k3 -n -r # Sort the results by concurrent tasks in descending order
+
+
+
+[
+  {
+    "operation": "shift",
+    "spec": {
+      "header": "&",
+      "resource": {
+        "\\@type": "resource.type",
+        "*": "resource.&"
+      }
+    }
+  },
+  {
+    "operation": "shift",
+    "spec": {
+      "resource": {
+        "resourceCharacteristic": {
+          "*": {
+            "name": {
+              "latest": {
+                "@(2,value)": {
+                  "": {
+                    "#true": "is_delete"
+                  },
+                  "#latest": "records[&3].rat_name"
+                },
+                "*": {
+                  "@(2,name)": "records[&3].rat_name"
+                }
+              }
+            },
+            "value": "records[&1].rat_value",
+            "\\@type": "records[&1].rat_datatype",
+            "@(name)": "records[&1].rat_name",
+            "@(2,type)": "records[&1].res_type",
+            "@(2,subtype)": "records[&1].res_subtype",
+            "@(2,drniId)": "records[&1].res_id",
+            "@(3,header.activityId)": "records[&1].rat_activity_id",
+            "@(3,header.timeStamp)": "records[&1].rat_activity_ts",
+            "@(3,header.action)": {
+              "delete": {
+                "#true": "records[&2].rat_isdeleted"
+              },
+              "*": {
+                "#false": "records[&2].rat_isdeleted"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "records": {
+        "*": {
+          "rat_value": "=join(',', @(1,rat_value))",
+          "rat_name": "=toUpper",
+          "res_type": "=toUpper"
+        }
+      }
+    }
+  },
+  {
+    "operation": "modify-overwrite-beta",
+    "spec": {
+      "records": {
+        "*": {
+          "rat_value": "=toString"
+        }
+      }
+    }
+  },
+  {
+    "operation": "modify-default-beta",
+    "spec": {
+      "records": {
+        "*": {
+          "lastinsertdate": "${now():toNumber():plus(28800000)}"
+        }
+      }
+    }
+}
+]
