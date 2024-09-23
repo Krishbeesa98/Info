@@ -72,3 +72,30 @@ if (flowFile != null) {
     // Transfer the flow file to the success relationship
     session.transfer(flowFile, REL_SUCCESS)
 }
+
+
+
+
+
+import pdfkit
+from org.apache.nifi.processor.io import StreamCallback
+from java.nio.charset import StandardCharsets
+
+class PyStreamCallback(StreamCallback):
+    def __init__(self):
+        pass
+
+    def process(self, inputStream, outputStream):
+        # Read incoming HTML content
+        html_content = IOUtils.toString(inputStream, StandardCharsets.UTF_8)
+
+        # Convert HTML to PDF
+        pdf = pdfkit.from_string(html_content, False)
+
+        # Write PDF to outputStream
+        outputStream.write(pdf)
+
+flowFile = session.get()
+if flowFile is not None:
+    flowFile = session.write(flowFile, PyStreamCallback())
+    session.transfer(flowFile, REL_SUCCESS)
