@@ -29,3 +29,46 @@ sort -k3 -n -r # Sort the results by concurrent tasks in descending order
 
 java.arg.15=--add-exports=java.base/sun.nio.ch=ALL-UNNAMED
 java.arg.16=--add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+
+
+
+
+
+
+
+
+import com.itextpdf.html2pdf.HtmlConverter
+import org.apache.nifi.processor.io.StreamCallback
+
+class PdfStreamCallback implements StreamCallback {
+    private final String htmlContent
+
+    PdfStreamCallback(String htmlContent) {
+        this.htmlContent = htmlContent
+    }
+
+    @Override
+    void process(InputStream inputStream, OutputStream outputStream) throws IOException {
+        HtmlConverter.convertToPdf(htmlContent, outputStream)
+    }
+}
+
+// Get the flow file and read the HTML content
+flowFile = session.get()
+if (flowFile != null) {
+    // Read HTML content from the flow file
+    String htmlContent = new String(session.read(flowFile).bytes, "UTF-8")
+
+    // Create a PDF stream callback
+    PdfStreamCallback pdfStreamCallback = new PdfStreamCallback(htmlContent)
+
+    // Create a new flow file for the PDF
+    flowFile = session.write(flowFile, pdfStreamCallback)
+
+    // Update the filename and MIME type
+    flowFile = session.putAttribute(flowFile, "filename", flowFile.getAttribute("filename").replace(".html", ".pdf"))
+    flowFile = session.putAttribute(flowFile, "mime.type", "application/pdf")
+
+    // Transfer the flow file to the success relationship
+    session.transfer(flowFile, REL_SUCCESS)
+}
