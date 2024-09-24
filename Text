@@ -99,3 +99,16 @@ flowFile = session.get()
 if flowFile is not None:
     flowFile = session.write(flowFile, PyStreamCallback())
     session.transfer(flowFile, REL_SUCCESS)
+
+
+
+
+import pdfkit
+
+html_content = '<h1>Hello, World!</h1><p>This is a sample HTML string.</p>'
+output_pdf = 'output_from_string.pdf'
+
+# Convert HTML string to PDF
+pdfkit.from_string(html_content, output_pdf)
+
+print(f'PDF generated from HTML string: {output_pdf}')
